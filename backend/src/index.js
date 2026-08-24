@@ -12,7 +12,14 @@ connectDB().then(async () => {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+//app.options('*', cors());
+app.options(/.*/, cors());
 app.use(express.json());
 
 // Routes
@@ -23,6 +30,14 @@ app.use('/api/settings', require('./routes/settingsRoutes'));
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled Error:', err);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+    });
 });
 
 const PORT = process.env.PORT || 5000;
